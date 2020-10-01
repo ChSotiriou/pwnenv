@@ -1,0 +1,153 @@
+FROM ubuntu:18.04
+
+# ----- Setup Enviornment ----- #
+# get basics
+USER root 
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y sudo sshfs bsdutils python3-dev \
+                            libpq-dev pkg-config zlib1g-dev libtool libtool-bin wget automake autoconf coreutils bison libacl1-dev \
+                            qemu-user qemu-kvm socat \
+                            postgresql-client nasm binutils-multiarch llvm clang \
+                            libpq-dev parallel libgraphviz-dev systemd-coredump\
+                            build-essential libxml2-dev libxslt1-dev git \
+                            libffi-dev cmake libreadline-dev libtool ruby netcat iproute2 openvpn sshpass \
+                            gcc ruby-dev
+
+# rename main user to pwndevil
+USER root
+RUN apt-get install -y zsh && \
+    useradd -s /bin/bash -m pwn 
+
+# install sudo
+RUN apt-get update && \
+    apt-get install sudo -y && \ 
+    echo "pwn ALL=NOPASSWD: ALL" > /etc/sudoers.d/pwn
+
+USER pwn
+
+WORKDIR /tmp
+
+WORKDIR /home/pwn 
+COPY files/zsh/.zshrc /tmp/.zshrc
+RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
+    sudo chsh -s $(which zsh) pwn && \
+    cp /tmp/.zshrc /home/pwn && \ 
+    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+
+WORKDIR /home/pwn/.oh-my-zsh/themes
+RUN git clone https://github.com/dracula/zsh.git dracula && \
+    ln -s dracula/dracula.zsh-theme dracula.zsh-theme
+
+WORKDIR /home/pwn
+RUN chmod -R 0771 /home/pwn
+
+
+
+USER root 
+RUN apt-get update && apt-get install -y ipython3 python3-pip && \
+    apt-get install -y build-essential libtool g++ gcc \
+    texinfo curl wget automake autoconf python python-dev git subversion \
+    unzip virtualenvwrapper sudo git virtualenvwrapper ca-certificates
+
+RUN gem install seccomp-tools one_gadget
+
+# setup vim to be awesome
+RUN apt-get install neovim -y 
+
+USER pwn
+COPY files/vim/init.vim /tmp/init.vim
+WORKDIR /home/pwn
+RUN mkdir -p .config/nvim && \
+    curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim && \
+    python3 -m pip install --user neovim && \
+    cp /tmp/init.vim .config/nvim/ && \
+    vim +'PlugInstall --sync' +qa && \
+    vim +'UpdateRemotePlugins --sync' +qa
+
+# ----- RE Tools ----- #
+USER root
+
+
+USER pwn 
+
+RUN python3 -m pip install --user pwntools && \ 
+    python3 -m pip install ropper && \
+    python3 -m pip install --user ROPGadget && \ 
+    python3 -m pip install --user sagemath numpy 
+
+USER root
+# install gdb & gef 
+RUN apt-get update && \
+    apt-get install gdb qemu-user libc6-armel-cross gdb-multiarch -y && \
+    mkdir /etc/qemu-binfmt && \
+    ln -s /usr/arm-linux-gnueabi /etc/qemu-binfmt/arm && \
+
+USER pwn
+
+# pwndbg
+RUN git clone https://github.com/pwndbg/pwndbg
+WORKDIR /home/pwn/pwndbg
+RUN bash setup.sh
+WORKDIR /home/pwn
+RUN mv pwndbg ~/pwndbg-src && \
+    echo "source ~/pwndbg-src/gdbinit.py" > ~/.gdbinit_pwndbg
+
+# peda
+RUN git clone https://github.com/longld/peda.git ~/peda
+
+# gef
+COPY files/gdb /tmp/gdb
+RUN wget -q -O ~/.gdbinit-gef.py https://github.com/hugsy/gef/raw/master/gef.py && \
+    echo source ~/.gdbinit-gef.py >> ~/.gdbinit && \
+    cp /tmp/gdb/.gdbinit /home/pwn/.gdbinit
+
+USER root
+WORKDIR /usr/bin
+RUN cp /tmp/gdb/gdb-* . && \
+    chmod +x /usr/bin/gdb-*
+
+
+USER root
+
+RUN apt-get update && apt-get install -y \
+    tmux \
+    xclip 
+
+USER pwn
+WORKDIR /home/pwn
+COPY files/tmux/.tmux.conf.local /tmp/.tmux.conf.local
+RUN git clone https://github.com/gpakosz/.tmux.git && \
+    ln -s -f .tmux/.tmux.conf && \
+    cp /tmp/.tmux.conf.local /home/pwn
+
+RUN mkdir -p /home/pwn/ctf-tools
+WORKDIR /home/pwn/ctf-tools
+COPY files/templates /tmp/templates
+RUN cp -r /tmp/templates /home/pwn/ctf-tools && \
+    sudo mv /home/pwn/ctf-tools/templates/make* /usr/bin && \
+    sudo chmod +x /usr/bin/makePWN*
+
+RUN git clone https://github.com/matrix1001/heapinspect.git
+
+# reutils
+RUN python3 -m pip install https://github.com/lief-project/LIEF/releases/download/0.9.0/pylief-0.9.0.zip --user && \
+    python3 -m pip install click --user && \
+    git clone https://github.com/Ayrx/reutils.git
+
+# libc database
+COPY files/libc-database /tmp/libc-database
+RUN sudo mv /tmp/libc-database . && sudo chown -R pwn libc-database
+WORKDIR /home/pwn/ctf-tools/libc-database
+RUN chmod +x download_libc.sh && ./download_libc.sh
+WORKDIR /home/pwn/ctf-tools
+
+# main arena offset
+RUN git clone https://github.com/bash-c/main_arena_offset
+
+
+WORKDIR /home/pwn
+RUN sudo rm -r /tmp/*
+USER pwn
+ENTRYPOINT [ "/usr/bin/zsh" ]

@@ -1,0 +1,2 @@
+#!/bin/bash
+cp ~/ctf-tools/templates/pwn_template.py xpl.py
