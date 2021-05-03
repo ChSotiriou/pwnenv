@@ -68,21 +68,20 @@ RUN mkdir -p .config/nvim && \
 
 # ----- RE Tools ----- #
 USER root
-
+RUN python3 -m pip install --upgrade setuptools
+RUN python3 -m pip install --upgrade pip
 
 USER pwn 
-
 RUN python3 -m pip install --user pwntools && \ 
-    python3 -m pip install ropper && \
-    python3 -m pip install --user ROPGadget && \ 
-    python3 -m pip install --user sagemath numpy 
+    python3 -m pip install --user ropper && \
+    python3 -m pip install --user ROPGadget
 
 USER root
 # install gdb & gef 
 RUN apt-get update && \
     apt-get install gdb qemu-user libc6-armel-cross gdb-multiarch -y && \
     mkdir /etc/qemu-binfmt && \
-    ln -s /usr/arm-linux-gnueabi /etc/qemu-binfmt/arm && \
+    ln -s /usr/arm-linux-gnueabi /etc/qemu-binfmt/arm
 
 USER pwn
 
@@ -102,6 +101,18 @@ COPY files/gdb /tmp/gdb
 RUN wget -q -O ~/.gdbinit-gef.py https://github.com/hugsy/gef/raw/master/gef.py && \
     echo source ~/.gdbinit-gef.py >> ~/.gdbinit && \
     cp /tmp/gdb/.gdbinit /home/pwn/.gdbinit
+
+WORKDIR /home/pwn
+RUN pip install rpyc && \ 
+    git clone https://github.com/hugsy/gef-extras && \
+    gdb -q  -ex "init-gef" \
+            -ex "gef config gef.extra_plugins_dir '~/gef-extras/scripts'" \
+            -ex "gef config pcustom.struct_path '~/gef-extras/structs'" \
+            -ex "gef config syscall-args.path '$~/gef-extras/syscall-tables'" \
+            -ex "gef config libc_args True" \
+            -ex "gef config libc_args_path '~/gef-extras/glibc-function-args'" \
+            -ex 'gef save' \
+            -ex 'quit'
 
 USER root
 WORKDIR /usr/bin
