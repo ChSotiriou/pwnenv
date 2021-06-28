@@ -25,7 +25,7 @@ def start():
 	
 	else:
 	    gs = '''
-	    init-gef
+	    init-pwndbg
 	    c
 	    '''
 	    if args.GDB: return gdb.debug(elf.path, gs)

@@ -1,1 +1,1 @@
-docker build -t pwnenvarm .
+docker build -t $args[0] .
