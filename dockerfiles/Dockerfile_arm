@@ -150,8 +150,6 @@ RUN python3 -m pip install https://github.com/lief-project/LIEF/releases/downloa
 # libc database
 COPY files/libc-database /tmp/libc-database
 RUN sudo mv /tmp/libc-database . && sudo chown -R pwn libc-database
-WORKDIR /home/pwn/ctf-tools/libc-database
-RUN chmod +x download_libc.sh && ./download_libc.sh
 WORKDIR /home/pwn/ctf-tools
 
 # main arena offset

@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y sudo sshfs bsdutils python3-dev \
                             postgresql-client nasm binutils-multiarch llvm clang \
                             libpq-dev parallel libgraphviz-dev \
                             build-essential libxml2-dev libxslt1-dev git \
-                            libffi-dev cmake libreadline-dev libtool ruby netcat iproute2 openvpn sshpass patchelf
+                            libffi-dev cmake libreadline-dev libtool ruby netcat iproute2 openvpn sshpass patchelf elfutils
 
 # rename main user to pwndevil
 USER root
@@ -130,13 +130,16 @@ RUN python3 -m pip install lief --user && \
 
 # libc database
 RUN sudo mv /tmp/files/libc-database . && sudo chown -R pwn libc-database
-WORKDIR /home/pwn/ctf-tools/libc-database
-RUN chmod +x download_libc.sh && ./download_libc.sh
 WORKDIR /home/pwn/ctf-tools
 
 # main arena offset
 RUN git clone https://github.com/bash-c/main_arena_offset
 
+# CTFmate
+RUN git clone https://github.com/X3eRo0/CTFMate.git 
+WORKDIR /home/pwn/ctf-tools/CTFMate
+RUN python3 -m pip install -r requirements.txt && chmod +x ctfmate.py
+RUN sudo ln -s /home/pwn/ctf-tools/CTFMate/ctfmate.py /usr/bin/ctfmate
 
 WORKDIR /home/pwn
 RUN sudo rm -r /tmp/*
