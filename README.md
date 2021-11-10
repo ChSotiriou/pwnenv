@@ -44,6 +44,8 @@ docker build -t <container-name> .
 ---
 ## Usage Info
 
+### Windows (Powershell)
+
 I set this up so the containers can be started from anywhere. The run scripts automatically mount the current directory in the container.
 
 > I added the following code to the **$PROFILE** of powershell, so it creates this function (`pwnenv`) when I open a new PS window.
@@ -59,3 +61,14 @@ function pwnenv ($ver, $arguments) {
 ```
 
 Now just restart powershell, go to the woking directory and type `pwnenv <arm|16|18|20>`
+
+### Linux
+
+For linux the alias is much simpler just add an alias for each conainer in the `.bashrc` file. 
+
+```bash
+alias pwnenv16='docker run --net=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --rm --name pwnenv16 -v `pwd`:/home/pwn/data pwnenv16'
+alias pwnenv18='docker run --net=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --rm --name pwnenv18 -v `pwd`:/home/pwn/data pwnenv18'
+alias pwnenv20='docker run --net=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --rm --name pwnenv20 -v `pwd`:/home/pwn/data pwnenv20'
+alias pwnenvarm='docker run --net=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --rm --name pwnenvarm -v `pwd`:/home/pwn/data pwnenvarm'
+```
