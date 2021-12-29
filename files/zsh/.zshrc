@@ -103,7 +103,6 @@ alias la='ls -A'
 alias l='ls -CF'
 alias open='xdg-open'
 alias xsel='xsel -b'
-alias v='vim'
 
 PATH="/home/christoss/perl5/bin${PATH:+:${PATH}}"; export PATH;
 PERL5LIB="/home/christoss/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
@@ -116,4 +115,3 @@ export TERM=xterm-256color
 
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
-

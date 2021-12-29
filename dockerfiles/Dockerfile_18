@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 
 # ----- Setup Enviornment ----- #
 # get basics
-USER root 
+USER root
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -18,22 +18,22 @@ RUN apt-get update && apt-get install -y sudo sshfs bsdutils python3-dev \
 # rename main user to pwndevil
 USER root
 RUN apt-get install -y zsh && \
-    useradd -s /bin/bash -m pwn 
+    useradd -s /bin/bash -m pwn
 
 # install sudo
 RUN apt-get update && \
-    apt-get install sudo -y && \ 
+    apt-get install sudo -y && \
     echo "pwn ALL=NOPASSWD: ALL" > /etc/sudoers.d/pwn
 
 USER pwn
 
 WORKDIR /tmp
 
-WORKDIR /home/pwn 
+WORKDIR /home/pwn
 COPY files/zsh/.zshrc /tmp/.zshrc
 RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
     sudo chsh -s $(which zsh) pwn && \
-    cp /tmp/.zshrc /home/pwn && \ 
+    cp /tmp/.zshrc /home/pwn && \
     git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 
 WORKDIR /home/pwn/.oh-my-zsh/themes
@@ -44,46 +44,45 @@ WORKDIR /home/pwn
 RUN chmod -R 0771 /home/pwn
 
 
-
-USER root 
+USER root
 RUN apt-get update && apt-get install -y ipython3 python3-pip && \
     apt-get install -y build-essential libtool g++ gcc \
     texinfo curl wget automake autoconf python python-dev git subversion \
-    unzip virtualenvwrapper sudo git cargo virtualenvwrapper ca-certificates
+    unzip virtualenvwrapper sudo git cargo virtualenvwrapper ca-certificates gettext
 
 RUN gem install seccomp-tools one_gadget
 
 # setup vim to be awesome
-RUN apt-get install neovim -y 
+RUN git clone https://github.com/neovim/neovim /tmp/neovim --branch=release-0.6 && \
+    cd /tmp/neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo -j && sudo make install && \
+    ln -s /usr/local/bin/nvim /usr/local/bin/vim
 
 USER pwn
 RUN python3 -m pip install -U pip
-COPY files/vim/init.vim /tmp/init.vim
+COPY files/vim /tmp/vim/
 WORKDIR /home/pwn
 RUN mkdir -p .config/nvim && \
-    curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim && \
-    python3 -m pip install --user neovim && \
-    cp /tmp/init.vim .config/nvim/ && \
-    vim +'PlugInstall --sync' +qa && \
-    vim +'UpdateRemotePlugins --sync' +qa
+    git clone --depth 1 https://github.com/wbthomason/packer.nvim\
+ ~/.local/share/nvim/site/pack/packer/start/packer.nvim && \
+    python3 -m pip install --user neovim pyright && \
+    cp /tmp/vim/* -r .config/nvim/ && \
+    nvim --headless -u ~/.config/nvim/lua/plugins.lua -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
 
 # ----- RE Tools ----- #
 USER root
 
-# RUN gem install one_gadget
+USER pwn
 
-
-USER pwn 
-
-RUN python3 -m pip install --user pwntools && \ 
+RUN python3 -m pip install --user pwntools && \
     python3 -m pip install ropper && \
-    python3 -m pip install --user ROPGadget && \ 
-    python3 -m pip install --user sagemath numpy 
+    python3 -m pip install --user ROPGadget && \
+    python3 -m pip install --user sagemath numpy
 
 USER root
-# install gdb & gef 
-RUN apt-get update && \
-    apt-get install gdb -y
+# install gdb & gef
+RUN cd /tmp && wget https://ftp.gnu.org/gnu/gdb/gdb-11.1.tar.gz && \
+    tar xf gdb-11.1.tar.gz && \
+    cd gdb-11.1 && ./configure && make && make install
 
 USER pwn
 
@@ -105,7 +104,7 @@ RUN wget -q -O ~/.gdbinit-gef.py https://github.com/hugsy/gef/raw/master/gef.py 
     cp /tmp/gdb/.gdbinit /home/pwn/.gdbinit
 
 WORKDIR /home/pwn
-RUN python3 -m pip install rpyc && \ 
+RUN python3 -m pip install rpyc && \
     git clone https://github.com/hugsy/gef-extras && \
     gdb -q  -ex "init-gef" \
             -ex "gef config gef.extra_plugins_dir '~/gef-extras/scripts'" \
@@ -127,7 +126,7 @@ USER root
 
 RUN apt-get update && apt-get install -y \
     tmux \
-    xclip 
+    xclip
 
 USER pwn
 
@@ -163,7 +162,7 @@ WORKDIR /home/pwn/ctf-tools
 RUN git clone https://github.com/bash-c/main_arena_offset
 
 # CTFmate
-RUN git clone https://github.com/X3eRo0/CTFMate.git 
+RUN git clone https://github.com/X3eRo0/CTFMate.git
 WORKDIR /home/pwn/ctf-tools/CTFMate
 RUN python3 -m pip install -r requirements.txt && chmod +x ctfmate.py
 RUN sudo ln -s /home/pwn/ctf-tools/CTFMate/ctfmate.py /usr/bin/ctfmate
@@ -172,3 +171,5 @@ WORKDIR /home/pwn
 RUN sudo rm -r /tmp/*
 USER pwn
 ENTRYPOINT [ "/usr/bin/zsh" ]
+
+# vim: set syntax=dockerfile:
