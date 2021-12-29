@@ -11,7 +11,7 @@ ssh_en = False
 if args.R:
 	host = '2019shell1.picoctf.com'
 	port = 22
-	
+
 	if ssh_en:
 		user = ''
 		password = ''
@@ -21,9 +21,11 @@ def start():
 	if args.R:
 		if not ssh_en: return remote(host, port)
 		else: return r.process(binary, cwd='/problems/leap-frog_1_2944cde4843abb6dfd6afa31b00c703c')
-	
+
 	else:
 		gs = '''
+        br _start
+        c
 		init-pwndbg
 		c
 		'''
@@ -45,5 +47,5 @@ rl = lambda : io.recvline()
 cl = lambda : io.clean()
 uu32 = lambda x : u32(x.ljust(4, b'\x00'))
 
-	
+
 io.interactive()
