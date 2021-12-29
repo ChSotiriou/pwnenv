@@ -1,4 +1,4 @@
-source /home/pwn/ctf-tools/heapinspect/gdbscript.py
+source /root/ctf-tools/heapinspect/gdbscript.py
 
 set step-mode on
 define init-peda
