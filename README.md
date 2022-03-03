@@ -51,9 +51,20 @@ Now just restart powershell, go to the woking directory and type `pwnenv`
 
 ### Linux
 
-For linux the alias is much simpler just add an alias in the `.bashrc` or respective alias file.
-
+For linux I do it by having the following two functions in the zshrc/bashrc file:
 
 ```bash
-alias pwnenv='docker run --net=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --rm --name pwnenv -v `pwd`:/root/data pwnenv'
+function checkContainerRunning() {
+    docker container ls -q -f name="$1"
+}
+
+function pwnenv() {
+    if [ $(checkContainerRunning "pwnenv") ]; then
+        docker exec -it pwnenv zsh
+    else
+        docker run --net=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --rm --name "pwnenv" -v "$(pwd)":/root/data "pwnenv"
+    fi
+}
 ```
+
+This starts up the container if it is not running or executes bash if it is.
