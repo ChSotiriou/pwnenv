@@ -20,6 +20,8 @@ RUN apt-get update && \
     xclip\
     unzip\
     file\
+    ltrace\
+    strace\
     # build tools
     build-essential\
     gcc\
