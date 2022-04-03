@@ -31,6 +31,7 @@ RUN apt-get update && \
     llvm\
     cmake\
     binutils-multiarch\
+    musl\
     # connectivity
     sshpass\
     sshfs\
@@ -94,7 +95,8 @@ RUN mkdir -p .config/nvim && \
  ~/.local/share/nvim/site/pack/packer/start/packer.nvim && \
     python3 -m pip install --user neovim pyright && \
     cp /tmp/vim/* -r .config/nvim/ && \
-    nvim --headless -u ~/.config/nvim/lua/plugins.lua -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+    nvim --headless -u ~/.config/nvim/lua/plugins.lua -c 'autocmd User PackerComplete quitall' -c 'PackerSync' && \
+    ln -s /usr/local/bin/nvim /usr/local/bin/vim
 
 # ----- RE Tools ----- #
 
@@ -176,7 +178,7 @@ WORKDIR /usr/bin
 RUN wget https://github.com/io12/pwninit/releases/download/3.2.0/pwninit && \
     chmod +x /usr/bin/pwninit
 
-WORKDIR /root
+WORKDIR /root/data
 RUN rm -rf /tmp/*
 ENTRYPOINT [ "/usr/bin/zsh" ]
 
