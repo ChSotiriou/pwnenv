@@ -33,6 +33,8 @@ def start():
 	    if args.GDB: return gdb.debug(elf.path, gs)
 	    else: return process(['qemu-arm', elf.path])
 
+def one_gadget(filename, base_addr=0):
+  return [(int(i)+base_addr) for i in subprocess.check_output(['one_gadget', '--raw', filename]).decode().split(' ')]
 
 def log_addr(name, addr):
     log.info('{}: 0x{:x}'.format(name, addr))
