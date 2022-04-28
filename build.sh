@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker build -t pwnenv .
+docker build -t christoss/pwnenv .

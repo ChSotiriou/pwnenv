@@ -25,9 +25,13 @@ This started as a fork of [pwndocker by skysider](https://github.com/skysider/pw
 - heap_inspect
 - and many more
 ---
-## Building the containers
+## Building / Downloading the containers
 
-```powershell
+```bash
+# Download From DockerHub
+docker pull christoss/pwnenv
+
+# or Bulding From Dockerfile
 docker build -t <container-name> .
 ```
 ---
