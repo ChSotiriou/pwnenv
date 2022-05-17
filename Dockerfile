@@ -86,7 +86,7 @@ RUN git clone https://github.com/gpakosz/.tmux.git && \
     cp /tmp/.tmux.conf.local ${HOME}
 
 # setup vim to be awesome
-RUN wget https://github.com/neovim/neovim/releases/download/v0.6.1/nvim-linux64.tar.gz -O /tmp/nvim.tar.gz && \
+RUN wget https://github.com/neovim/neovim/releases/download/v0.7.0/nvim-linux64.tar.gz -O /tmp/nvim.tar.gz && \
     tar -xzvf /tmp/nvim.tar.gz -C /tmp && \
     cp -r /tmp/nvim-linux64/* /usr/local
 COPY files/vim /tmp/vim/
