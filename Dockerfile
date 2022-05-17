@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # ----- Setup Enviornment ----- #
 # get basics
@@ -150,7 +150,7 @@ RUN cargo install xgadget --features cli-bin
 COPY files/templates /tmp/templates
 RUN cp -r /tmp/templates /root/ctf-tools && \
     mv /root/ctf-tools/templates/make* /usr/bin && \
-    chmod +x /usr/bin/makePWN*
+    chmod +x /usr/bin/makePWN* /root/ctf-tools/templates/*
 
 # reutils
 WORKDIR /root/ctf-tools

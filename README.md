@@ -8,8 +8,6 @@
 2. Updated vimrc and zshrc
 3. Removed non privilaged user (everything happens with the root user)
 
-This was built to run on docker with _WSL 2_ on Windows systems.
-
 This started as a fork of [pwndocker by skysider](https://github.com/skysider/pwndocker)
 
 ### **Features**:
