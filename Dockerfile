@@ -117,20 +117,11 @@ RUN git clone https://github.com/longld/peda.git ~/peda
 
 # gef
 COPY files/gdb /tmp/gdb
-RUN wget -q -O ~/.gdbinit-gef.py https://github.com/hugsy/gef/raw/master/gef.py && \
+RUN python3 -m pip install rpyc keystone-engine && \
+    wget -q -O ~/.gdbinit-gef.py https://gef.blah.cat/py && \
     echo source ~/.gdbinit-gef.py >> ~/.gdbinit && \
+    wget -q -O- https://github.com/hugsy/gef/raw/main/scripts/gef-extras.sh | sh && \
     cp /tmp/gdb/.gdbinit /root/.gdbinit
-
-RUN python3 -m pip install rpyc && \
-    git clone https://github.com/hugsy/gef-extras && \
-    gdb -q  -ex "init-gef" \
-            -ex "gef config gef.extra_plugins_dir '~/gef-extras/scripts'" \
-            -ex "gef config pcustom.struct_path '~/gef-extras/structs'" \
-            -ex "gef config syscall-args.path '$~/gef-extras/syscall-tables'" \
-            -ex "gef config libc_args True" \
-            -ex "gef config libc_args_path '~/gef-extras/glibc-function-args'" \
-            -ex 'gef save' \
-            -ex 'quit'
 
 WORKDIR /usr/bin
 RUN cp /tmp/gdb/gdb-* . && \
@@ -177,6 +168,11 @@ RUN python3 -m pip install -r requirements.txt && \
 WORKDIR /usr/bin
 RUN wget https://github.com/io12/pwninit/releases/download/3.2.0/pwninit && \
     chmod +x /usr/bin/pwninit
+
+# Kernel Stuff
+WORKDIR /usr/bin
+RUN wget -O extract-vmlinux https://raw.githubusercontent.com/torvalds/linux/master/scripts/extract-vmlinux && \
+    python3 -m pip install --upgrade git+https://github.com/marin-m/vmlinux-to-elf
 
 WORKDIR /root/data
 RUN rm -rf /tmp/*
