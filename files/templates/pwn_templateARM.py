@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 from pwn import *
 
+os.environ['QEMU_LD_PREFIX'] = '/usr/arm-linux-gnueabi'
+
 context.terminal = ['tmux', 'splitw', '-v']
 context.arch = 'arm'
 
@@ -31,7 +33,7 @@ def start():
 	    c
 	    '''
 	    if args.GDB: return gdb.debug(elf.path, gs)
-	    else: return process(['qemu-arm', elf.path])
+	    else: return process([f'qemu-arm {elf.path}'.split()])
 
 def one_gadget(filename, base_addr=0):
   return [(int(i)+base_addr) for i in subprocess.check_output(['one_gadget', '--raw', filename]).decode().split(' ')]

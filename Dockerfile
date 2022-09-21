@@ -7,6 +7,8 @@ ENV HOME /root
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
+    apt-get upgrade -y  && \
+    apt-get update && \
     apt-get install -y \
     # core
     coreutils\
@@ -50,10 +52,11 @@ RUN apt-get update && \
     ruby\
     ruby-dev\
     # debugging
-    gdb\
-    gdbserver\
+    libgmp-dev\
+    texinfo\
     libc6-armel-cross\
     gdb-multiarch\
+    gdb\
     # ctfmate
     patchelf\
     elfutils
@@ -107,6 +110,12 @@ RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --user sagemath numpy
 
 # # install gdb
+# RUN cd /tmp && \
+# wget https://sourceware.org/pub/gdb/snapshots/current/gdb-13.0.50.20220822.tar.xz -O gdb.tar.xz && \
+# tar xf gdb.tar.xz && \
+# cd gdb-13.0.50.20220822 && \
+# ./configure && make -j8 && make install
+
 # pwndbg
 RUN git clone https://github.com/pwndbg/pwndbg
 RUN cd ${HOME}/pwndbg && bash setup.sh && \
@@ -168,6 +177,12 @@ RUN python3 -m pip install -r requirements.txt && \
 WORKDIR /usr/bin
 RUN wget https://github.com/io12/pwninit/releases/download/3.2.0/pwninit && \
     chmod +x /usr/bin/pwninit
+
+# extract ubuntu package
+WORKDIR /usr/bin
+COPY ./files/ubuntuGetLibc.sh /usr/bin/ubuntuGetLibc
+RUN apt install -y zstd && \
+    chmod +x /usr/bin/ubuntuGetLibc
 
 # Kernel Stuff
 WORKDIR /usr/bin

@@ -30,6 +30,13 @@ vim.api.nvim_set_keymap('', '<leader>/', ':Commentary<CR>', {})
 
 ------------------------------------------------------------------
 
+-- Vimsnippets
+vim.g.UltiSnipsExpandTrigger = "<tab>"
+vim.g.UltiSnipsJumpForwardTrigger = "<c-j>"
+vim.g.UltiSnipsJumpBackwardTrigger = "<c-k>"
+
+------------------------------------------------------------------
+
 -- General Mappings
 -- Map Y to act like D and C, i.e. to yank until EOL, rather than act as yy,
 -- which is the default
