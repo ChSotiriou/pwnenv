@@ -116,6 +116,11 @@ RUN python3 -m pip install --upgrade pip && \
 # cd gdb-13.0.50.20220822 && \
 # ./configure && make -j8 && make install
 
+# radare2
+RUN git clone https://github.com/radareorg/radare2 && \
+    cd radare2 && sys/install.sh && \
+    r2pm init && r2pm -i r2dec
+
 # pwndbg
 RUN git clone https://github.com/pwndbg/pwndbg
 RUN cd ${HOME}/pwndbg && bash setup.sh && \
