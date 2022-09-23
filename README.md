@@ -14,6 +14,7 @@ This started as a fork of [pwndocker by skysider](https://github.com/skysider/pw
 - zsh / tmux
 - Custom **pwntools** templates for **x86**, **x86-64**, **arm**
 - **gdb** with **gef**, **pwndbg**, **peda** ([Article from Andreas Pogiatzis](https://medium.com/bugbountywriteup/pwndbg-gef-peda-one-for-all-and-all-for-one-714d71bf36b8))
+- radare2
 - one_gadget
 - seccomp-tools
 - reutils
@@ -27,7 +28,7 @@ This started as a fork of [pwndocker by skysider](https://github.com/skysider/pw
 
 ```bash
 # Download From DockerHub
-docker pull christoss/pwnenv
+docker pull jojo1216/pwnenv
 
 # or Bulding From Dockerfile
 docker build -t <container-name> .
