@@ -109,6 +109,9 @@ RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --user ROPGadget && \
     python3 -m pip install --user sagemath numpy
 
+# ----- Build Tools ----- #
+RUN pip3 install meson ninja
+
 # # install gdb
 # RUN cd /tmp && \
 # wget https://sourceware.org/pub/gdb/snapshots/current/gdb-13.0.50.20220822.tar.xz -O gdb.tar.xz && \
@@ -116,10 +119,22 @@ RUN python3 -m pip install --upgrade pip && \
 # cd gdb-13.0.50.20220822 && \
 # ./configure && make -j8 && make install
 
-# radare2
-RUN git clone https://github.com/radareorg/radare2 && \
-    cd radare2 && sys/install.sh && \
-    r2pm init && r2pm -i r2dec
+#rizin
+RUN git clone https://github.com/rizinorg/rizin && \
+    cd rizin && \
+    meson --buildtype=release build && \
+    ninja -C build && \
+    ninja -C build install
+
+#rz-ghidra
+RUN git clone https://github.com/rizinorg/rz-ghidra && \
+    cd rz-ghidra && \
+    git submodule init && \
+    git submodule update && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=~/.local/ .. && \
+    make && \
+    make install
 
 # pwndbg
 RUN git clone https://github.com/pwndbg/pwndbg
