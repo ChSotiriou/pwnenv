@@ -109,6 +109,9 @@ RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --user ROPGadget && \
     python3 -m pip install --user sagemath numpy
 
+# Downgrade unicorn package to prevent pwntools crash
+RUN pip3 install unicorn==1.0.3
+
 # ----- Build Tools ----- #
 RUN pip3 install meson ninja
 
