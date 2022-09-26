@@ -56,7 +56,6 @@ RUN apt-get update && \
     texinfo\
     libc6-armel-cross\
     gdb-multiarch\
-    gdb\
     # ctfmate
     patchelf\
     elfutils
@@ -109,12 +108,13 @@ RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --user ROPGadget && \
     python3 -m pip install --user sagemath numpy
 
-# # install gdb
-# RUN cd /tmp && \
-# wget https://sourceware.org/pub/gdb/snapshots/current/gdb-13.0.50.20220822.tar.xz -O gdb.tar.xz && \
-# tar xf gdb.tar.xz && \
-# cd gdb-13.0.50.20220822 && \
-# ./configure && make -j8 && make install
+# install gdb
+# fixes https://github.com/Gallopsled/pwntools/issues/1783
+RUN cd /tmp && \
+wget https://sourceware.org/pub/gdb/snapshots/current/gdb-weekly-11.0.50.20210701.tar.xz -O gdb.tar.xz && \
+tar xf gdb.tar.xz && \
+cd gdb-* && \
+./configure --with-python=/usr/bin/python3 && make -j8 && make install
 
 # pwndbg
 RUN git clone https://github.com/pwndbg/pwndbg
@@ -186,8 +186,11 @@ RUN apt install -y zstd && \
 
 # Kernel Stuff
 WORKDIR /usr/bin
+COPY ./files/decompressKernel.sh /usr/bin/decompressKernel
 RUN wget -O extract-vmlinux https://raw.githubusercontent.com/torvalds/linux/master/scripts/extract-vmlinux && \
-    python3 -m pip install --upgrade git+https://github.com/marin-m/vmlinux-to-elf
+    apt-get install cpio && \
+    python3 -m pip install --upgrade git+https://github.com/marin-m/vmlinux-to-elf && \
+    chmod +x /usr/bin/decompressKernel
 
 WORKDIR /root/data
 RUN rm -rf /tmp/*
