@@ -1,2 +1,12 @@
-#!/bin/bash
-cp ~/ctf-tools/templates/pwn_template.py xpl.py
+#!/usr/bin/python3
+
+import sys
+import os
+
+with open("/root/ctf-tools/templates/pwn_template.py", "r") as file:
+    template = file.read()
+
+with open("./x.py", "w") as file:
+    file.write(template.replace("[binary]", sys.argv[1]))
+
+os.system("chmod +x ./x.py")

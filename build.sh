@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker build -t christoss/pwnenv .
+docker build -t jojo1216/pwnenv .
