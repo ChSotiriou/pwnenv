@@ -116,6 +116,9 @@ tar xf gdb.tar.xz && \
 cd gdb-* && \
 ./configure --with-python=/usr/bin/python3 && make -j8 && make install
 
+# Downgrade unicorn package to prevent pwntools crash
+RUN pip3 install unicorn==1.0.3
+
 # pwndbg
 RUN git clone https://github.com/pwndbg/pwndbg
 RUN cd ${HOME}/pwndbg && bash setup.sh && \

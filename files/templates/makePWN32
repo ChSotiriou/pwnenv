@@ -1,2 +1,22 @@
-#!/bin/bash
-cp ~/ctf-tools/templates/pwn_template32.py xpl.py
+#!/usr/bin/python3
+
+import sys
+import os
+
+exploitName = "./xpl.py"
+
+if len(sys.argv) == 1:
+    binName = "pwn"
+elif len(sys.argv) == 2:
+    binName = sys.argv[1]
+else:
+    print(f"Usage: {sys.argv[0]} [binaryName:pwn]")
+    exit(1)
+
+with open("/root/ctf-tools/templates/pwn_template32.py", "r") as file:
+    template = file.read()
+
+with open(exploitName, "w") as file:
+    file.write(template.replace("[binary]", binName))
+
+os.system(f"chmod +x {exploitName}")
