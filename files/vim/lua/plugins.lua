@@ -44,6 +44,10 @@ return require('packer').startup(function()
 
     use 'airblade/vim-gitgutter'
 
+    use {"akinsho/toggleterm.nvim", tag = '*', config = function()
+        require("toggleterm").setup()
+    end}
+
     if packer_bootstrap then
         require('packer').sync()
     end

@@ -115,6 +115,10 @@ vim.cmd('set notimeout ttimeout ttimeoutlen=200')
 -- Use <F11> to toggle between 'paste' and 'nopaste'
 vim.api.nvim_set_option('pastetoggle', '<F11>')
 
+-- Use intuitive split location
+vim.api.nvim_set_option('splitright', true)
+vim.api.nvim_set_option('splitbelow', true)
+
 -------------------------------------------------------------------------------
 
 -- Indentation options
@@ -123,6 +127,7 @@ vim.api.nvim_set_option('pastetoggle', '<F11>')
 -- Indentation settings for using 4 spaces instead of tabs.
 -- Do not change 'tabstop' from its default value of 8 with this setup.
 vim.cmd([[
+set tabstop=4
 set shiftwidth=4
 set softtabstop=4
 set expandtab
@@ -142,9 +147,10 @@ cmp.setup({
       vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
     end,
   },
+
   mapping = {
-    ['<C-b>'] = cmp.mapping(cmp.mapping.scroll_docs(-4), { 'i', 'c' }),
-    ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(4), { 'i', 'c' }),
+    ['<C-j>'] = cmp.mapping(cmp.mapping.select_next_item(), { 'i', 'c' }),
+    ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(), { 'i', 'c' }),
     ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
     ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
     ['<C-e>'] = cmp.mapping({
@@ -183,7 +189,115 @@ require'cmp'.setup.cmdline(':', {
 local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
 require('lspconfig')['clangd'].setup{ capabilities = capabilities }
 require('lspconfig')['cmake'].setup{ capabilities = capabilities }
-require('lspconfig')['pyright'].setup{ capabilities = capabilities }
+require('lspconfig')['dockerls'].setup{ capabilities = capabilities }
+require('lspconfig')['vimls'].setup{ capabilities = capabilities }
+require('lspconfig')['texlab'].setup{
+    capabilities = capabilities,
+    filetypes = { 'tex', 'bib', 'md' }
+}
+require('lspconfig')['sumneko_lua'].setup{
+    settings = {
+        Lua = {
+            runtime = {
+                -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+                version = 'LuaJIT',
+            },
+            diagnostics = {
+                -- Get the language server to recognize the `vim` global
+                globals = {'vim'},
+            },
+            workspace = {
+                -- Make the server aware of Neovim runtime files
+                library = vim.api.nvim_get_runtime_file("", true),
+                checkThirdParty = false,
+            },
+            -- Do not send telemetry data containing a randomized but unique identifier
+            telemetry = {
+                enable = false,
+                },
+        },
+    },
+    capabilities = capabilities
+}
+require'lspconfig'.rust_analyzer.setup{}
+require'lspconfig'.pyright.setup{}
+
+-------------------------------------------------------------------------------
+
+require("toggleterm").setup()
+
+-------------------------------------------------------------------------------
+
+-- Keymaps
+function ChangeLanguage()
+    local languages = {
+        {'', 'en_gb'}, -- Default (English)
+        {'greek_utf-8', 'el'}
+    }
+
+    for i = 1, #languages do
+        if vim.api.nvim_get_option('keymap') == languages[i][1] then
+            vim.cmd(':set keymap=' .. languages[(i % #languages) + 1][1])
+            vim.cmd(':setlocal spelllang=' .. languages[(i % #languages) + 1][2])
+            return
+        end
+    end
+end
+
+
+-------------------------------------------------------------------------------
+
+-- Use markdown.pandoc for everything
+vim.cmd([[
+augroup pandoc_syntax
+    au! BufNewFile,BufFilePre,BufRead *.md set filetype=markdown.pandoc
+augroup END
+]])
+
+-------------------------------------------------------------------------------
+
+-- Treesitter Setup
+require'nvim-treesitter.configs'.setup { highlight = { enable = true } }
+
+-------------------------------------------------------------------------------
+
+-- vim-cmake
+vim.g.cmake_build_dir_location = 'build'
+vim.g.cmake_default_config = ''
+vim.g.cmake_root_markers = { 'build' }
+
+-------------------------------------------------------------------------------
+
+-- Neoformat
+
+-- C/C++
+vim.cmd([[
+    let g:neoformat_cpp_clangformat = {
+    \    'exe': 'clang-format',
+    \    'args': ['--style="{IndentWidth: 4}"']
+    \}
+]])
+vim.g.neoformat_enabled_cpp = { 'clangformat' }
+vim.g.neoformat_enabled_c = { 'clangformat' }
+
+vim.cmd('autocmd BufWritePre *c,*.cpp,*.h,*.hpp Neoformat')
+
+-- CMake
+vim.cmd([[
+    let g:neoformat_cmake_cmakeformat = {
+    \    'exe': 'cmake-format',
+    \    'args': ['--tab-size 4']
+    \}
+]])
+vim.g.neoformat_enabled_cmake = { 'cmakeformat' }
+
+vim.cmd('autocmd BufWritePre CMakeLists.txt Neoformat')
+
+-------------------------------------------------------------------------------
+
+-- FLoaterm
+vim.g.floaterm_wintype = 'split'
+vim.g.floaterm_width = 0.4
 
 -------------------------------------------------------------------------------
 
@@ -224,5 +338,12 @@ vim.cmd([[
 highlight QuickScopePrimary guifg='#afff5f' gui=underline ctermfg=155 cterm=underline
 highlight QuickScopeSecondary guifg='#5fffff' gui=underline ctermfg=81 cterm=underline
 ]])
+
+-------------------------------------------------------------------------------
+
+-- Vimtex
+
+vim.g.vimtex_mappings_enabled = 0
+vim.g.vimtex_syntax_enabled = 0
 
 -------------------------------------------------------------------------------
