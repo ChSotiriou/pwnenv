@@ -41,7 +41,8 @@ RUN apt-get update && \
     netcat\
     # qemu
     qemu-user\
-    qemu-kvm
+    qemu-kvm\
+    valgrind
 
 # Tooling
 RUN apt-get update && \
@@ -193,7 +194,9 @@ COPY ./files/decompressKernel.sh /usr/bin/decompressKernel
 RUN wget -O extract-vmlinux https://raw.githubusercontent.com/torvalds/linux/master/scripts/extract-vmlinux && \
     apt-get install cpio && \
     python3 -m pip install --upgrade git+https://github.com/marin-m/vmlinux-to-elf && \
-    chmod +x /usr/bin/decompressKernel
+    chmod +x /usr/bin/decompressKernel && \
+    chmod +x /usr/bin/extract-vmlinux
+
 
 WORKDIR /root/data
 RUN rm -rf /tmp/*
