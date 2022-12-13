@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # ----- Setup Enviornment ----- #
 # get basics
@@ -56,6 +56,10 @@ RUN apt-get update && \
     libgmp-dev\
     texinfo\
     libc6-armel-cross\
+    gcc-arm-linux-gnueabihf\
+    gcc-10-arm-linux-gnueabi\
+    gdb\
+    gdbserver\
     gdb-multiarch\
     # ctfmate
     patchelf\
@@ -109,16 +113,16 @@ RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --user ROPGadget && \
     python3 -m pip install --user sagemath numpy
 
-# install gdb
-# fixes https://github.com/Gallopsled/pwntools/issues/1783
-RUN cd /tmp && \
-wget https://sourceware.org/pub/gdb/snapshots/current/gdb-weekly-11.0.50.20210701.tar.xz -O gdb.tar.xz && \
-tar xf gdb.tar.xz && \
-cd gdb-* && \
-./configure --with-python=/usr/bin/python3 && make -j8 && make install
-
 # Downgrade unicorn package to prevent pwntools crash
 RUN pip3 install unicorn==1.0.3
+
+# qemu
+RUN mkdir -p /etc/qemu-binfmt && \ 
+    ln -s /usr/arm-linux-gnueabi /etc/qemu-binfmt/arm
+
+# gdb 
+RUN mkdir -p /etc/debuginfod/ && \
+    echo "https://debuginfod.elfutils.org/" >> urls.urls
 
 # pwndbg
 RUN git clone https://github.com/pwndbg/pwndbg

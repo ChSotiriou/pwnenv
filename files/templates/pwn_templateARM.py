@@ -55,4 +55,4 @@ cl = lambda : io.clean()
 uu32 = lambda x : u32(x.ljust(4, b'\x00'))
 uu64 = lambda x : u64(x.ljust(8, b'\x00'))
 
-io.interactative()
+io.interactive()

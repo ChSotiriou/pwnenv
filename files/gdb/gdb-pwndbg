@@ -1,2 +1,2 @@
 #!/bin/sh
-exec gdb -q -ex init-pwndbg "$@"
+exec gdb-multiarch -q -ex init-pwndbg "$@"
