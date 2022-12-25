@@ -64,7 +64,7 @@ function pwnenv() {
     if [ $(checkContainerRunning "pwnenv") ]; then
         docker exec -it pwnenv zsh
     else
-        docker run --net=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --rm --name "pwnenv" -v "$(pwd)":/root/data "pwnenv"
+        docker run --net=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --rm --name "pwnenv" -v "$(pwd)":/root/data "christoss/pwnenv"
     fi
 }
 ```
