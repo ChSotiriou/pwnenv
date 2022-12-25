@@ -34,6 +34,7 @@ RUN apt-get update && \
     cmake\
     binutils-multiarch\
     musl\
+    musl-tools\
     # connectivity
     sshpass\
     sshfs\
@@ -109,6 +110,7 @@ RUN mkdir -p .config/nvim && \
 
 RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --user pwntools && \
+    python3 -m pip install --user ptrlib && \
     python3 -m pip install --user ropper && \
     python3 -m pip install --user ROPGadget && \
     python3 -m pip install --user sagemath numpy
@@ -194,7 +196,7 @@ RUN apt install -y zstd && \
 
 # Kernel Stuff
 WORKDIR /usr/bin
-COPY ./files/decompressKernel.sh /usr/bin/decompressKernel
+COPY ./files/decompressCPIO.sh /usr/bin/decompressCPIO
 RUN wget -O extract-vmlinux https://raw.githubusercontent.com/torvalds/linux/master/scripts/extract-vmlinux && \
     apt-get install cpio && \
     python3 -m pip install --upgrade git+https://github.com/marin-m/vmlinux-to-elf && \
