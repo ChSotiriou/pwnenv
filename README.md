@@ -40,12 +40,20 @@ docker build -t <container-name> .
 
 I set this up so the containers can be started from anywhere. The run scripts automatically mount the current directory in the container.
 
-> I added the following code to the **$PROFILE** of powershell, so it creates this function (`pwnenv`) when I open a new PS window.
+> I added the following code to the **$PROFILE** of powershell.
 
 ```powershell
-$pwnenv = "<path-to-the-run-folder>"
-function pwnenv ($arguments) {
-    & $pwnenv/run.ps1 $arguments
+function checkContainerRunning {
+    param($name)
+    docker container ls -q -f name="$name"
+}
+
+function pwnenv {
+    if (checkContainerRunning "pwnenv") {
+        docker exec -it pwnenv zsh
+    } else {
+        docker run --env="DISPLAY=$(Get-NetIPAddress -AddressFamily IPV4 -InterfaceAlias "Wi-Fi" | Select IPAddress):0" --net=host --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --rm --name pwnenv -v "$(get-location):/root/data".ToLower() christoss/pwnenv
+    }
 }
 ```
 
