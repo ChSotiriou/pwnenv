@@ -40,13 +40,6 @@ vim.api.nvim_set_option('hlsearch', true)
 -- center screen in insert mode
 vim.cmd('autocmd InsertEnter * norm zz')
 
--- Automatically deletes all trailing whitespace and newlines at end of file on save.
-vim.cmd([[
-    autocmd BufWritePre * %s/\s\+$//e
-    autocmd BufWritePre * %s/\n\+\%$//e
-    autocmd BufWritePre *.[ch] %s/\%$/\r/e
-]])
-
 -- Prevent VIM from erasing clipboard at exit
 vim.cmd([[
     autocmd VimLeave * call system("xsel -ib", getreg('+'))
@@ -195,7 +188,7 @@ require('lspconfig')['texlab'].setup{
     capabilities = capabilities,
     filetypes = { 'tex', 'bib', 'md' }
 }
-require('lspconfig')['sumneko_lua'].setup{
+require('lspconfig')['lua_ls'].setup{
     settings = {
         Lua = {
             runtime = {

@@ -200,7 +200,7 @@ COPY ./files/decompressCPIO.sh /usr/bin/decompressCPIO
 RUN wget -O extract-vmlinux https://raw.githubusercontent.com/torvalds/linux/master/scripts/extract-vmlinux && \
     apt-get install cpio && \
     python3 -m pip install --upgrade git+https://github.com/marin-m/vmlinux-to-elf && \
-    chmod +x /usr/bin/decompressKernel && \
+    chmod +x /usr/bin/decompressCPIO && \
     chmod +x /usr/bin/extract-vmlinux
 
 
