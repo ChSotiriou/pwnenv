@@ -62,6 +62,7 @@ RUN apt-get update && \
     gdb\
     gdbserver\
     gdb-multiarch\
+    clangd\
     # ctfmate
     patchelf\
     elfutils
@@ -154,7 +155,8 @@ RUN git clone https://github.com/matrix1001/heapinspect.git
 RUN gem install seccomp-tools one_gadget
 
 # xgadget
-RUN cargo install xgadget --features cli-bin
+RUN cargo install xgadget --features cli-bin && \
+    cargo install ripgrep
 
 # pwn templates
 COPY files/templates /tmp/templates
@@ -202,6 +204,14 @@ RUN wget -O extract-vmlinux https://raw.githubusercontent.com/torvalds/linux/mas
     python3 -m pip install --upgrade git+https://github.com/marin-m/vmlinux-to-elf && \
     chmod +x /usr/bin/decompressCPIO && \
     chmod +x /usr/bin/extract-vmlinux
+
+# pwnlib.c
+WORKDIR /tmp
+RUN wget https://github.com/ChSotiriou/pwnlib.c/releases/download/master/headers.tar.gz && \
+    tar xzvf headers.tar.gz && mv inc /usr/local/include/pwnlib && \
+    echo '/usr/local/lib/' > /etc/ld.so.conf.d/pwnlib.conf && \
+    wget https://github.com/ChSotiriou/pwnlib.c/releases/download/master/libpwnlib.so -O /usr/local/lib/libpwnlib.so && \
+    ldconfig
 
 
 WORKDIR /root/data

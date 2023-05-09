@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 # ensure decompressed is named `root`
 # ensure filesystem (cpio file) is named debugfs.cpio
 
@@ -9,12 +11,33 @@ cd initramfs; find . -print0 | cpio -o --null --format=newc | gzip -2 > ../debug
 cd ..
 
 # start tmux windows with gdb
-tmux split -v -p 50 "gdb-pwndbg -x script.gdb"
+if [ "$1" = "GDB" ]; then
+    tmux split -v -p 50 "gdb-pwndbg -x script.gdb"
 
-# replace with challenge run command
-qemu-system-x86_64 \
-    -kernel ./bzImage \
-    -initrd ./debugfs.cpio.gz \
-    -monitor /dev/null \
-    -nographic -append "console=ttyS0" \
-    -s -S
+    qemu-system-x86_64 \
+        -m 64M \
+        -nographic \
+        -kernel bzImage \
+        -append "console=ttyS0 oops=panic panic=-1 nopti nokaslr" \
+        -no-reboot \
+        -cpu qemu64 \
+        -smp 1 \
+        -monitor /dev/null \
+        -initrd ./debugfs.cpio.gz \
+        -net nic,model=virtio \
+        -net user \
+        -s -S
+else
+    qemu-system-x86_64 \
+        -m 64M \
+        -nographic \
+        -kernel bzImage \
+        -append "console=ttyS0 oops=panic panic=-1 nopti nokaslr" \
+        -no-reboot \
+        -cpu qemu64 \
+        -smp 1 \
+        -monitor /dev/null \
+        -initrd ./debugfs.cpio.gz \
+        -net nic,model=virtio \
+        -net user
+fi
