@@ -89,10 +89,7 @@ RUN git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh &&\
 
 # tmux
 WORKDIR /root
-COPY files/tmux/.tmux.conf.local /tmp/.tmux.conf.local
-RUN git clone https://github.com/gpakosz/.tmux.git && \
-    ln -s -f .tmux/.tmux.conf && \
-    cp /tmp/.tmux.conf.local ${HOME}
+COPY files/tmux /root/.config/tmux
 
 # setup vim to be awesome
 RUN wget https://github.com/neovim/neovim/releases/download/v0.8.0/nvim-linux64.tar.gz -O /tmp/nvim.tar.gz && \
@@ -204,15 +201,6 @@ RUN wget -O extract-vmlinux https://raw.githubusercontent.com/torvalds/linux/mas
     python3 -m pip install --upgrade git+https://github.com/marin-m/vmlinux-to-elf && \
     chmod +x /usr/bin/decompressCPIO && \
     chmod +x /usr/bin/extract-vmlinux
-
-# pwnlib.c
-WORKDIR /tmp
-RUN wget https://github.com/ChSotiriou/pwnlib.c/releases/download/master/headers.tar.gz && \
-    tar xzvf headers.tar.gz && mv inc /usr/local/include/pwnlib && \
-    echo '/usr/local/lib/' > /etc/ld.so.conf.d/pwnlib.conf && \
-    wget https://github.com/ChSotiriou/pwnlib.c/releases/download/master/libpwnlib.so -O /usr/local/lib/libpwnlib.so && \
-    ldconfig
-
 
 WORKDIR /root/data
 RUN rm -rf /tmp/*

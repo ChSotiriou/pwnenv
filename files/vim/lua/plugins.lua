@@ -44,6 +44,8 @@ return require('packer').startup(function()
 
     use 'airblade/vim-gitgutter'
 
+    use "christoomey/vim-tmux-navigator"
+
     use {"akinsho/toggleterm.nvim", tag = '*', config = function()
         require("toggleterm").setup()
     end}
