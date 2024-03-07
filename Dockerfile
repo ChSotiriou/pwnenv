@@ -75,6 +75,11 @@ ENV PATH ${HOME}/.local/bin:${PATH}
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH ${HOME}/.cargo/bin:${PATH}
 
+# Support Unicode Characters (https://github.com/itzg/docker-minecraft-server/issues/2164)
+RUN apt-get update -y && apt-get install -y locales
+RUN echo en_US.UTF-8 UTF-8 > /etc/locale.gen
+RUN dpkg-reconfigure --frontend=noninteractive locales
+
 # zsh
 WORKDIR /root
 COPY files/zsh/.zshrc /root/.zshrc
