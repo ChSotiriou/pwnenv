@@ -2,57 +2,73 @@
 
 from pwn import *
 
-os.environ['QEMU_LD_PREFIX'] = '/usr/arm-linux-gnueabi'
+os.environ["QEMU_LD_PREFIX"] = "/usr/arm-linux-gnueabi"
 
-context.terminal = ['tmux', 'splitw', '-v']
+context.terminal = ["tmux", "splitw", "-v"]
 context.arch = "arm"
 
-binary = '[binary]'
+binary = "[binary]"
 elf = context.binary = ELF(binary)
 rop = ROP(elf)
 
 ssh_en = False
 if args.R:
-    host = args.HOST or ''
+    host = args.HOST or ""
     port = args.PORT or 0
 
     if ssh_en:
-        user = ''
-        password = ''
+        user = ""
+        password = ""
         r = ssh(user=user, host=host, port=port, password=password)
 
 
 def start():
     if args.R:
-        if not ssh_en: return remote(host, port)
-        else: return r.process(binary, cwd='')
+        if not ssh_en:
+            return remote(host, port)
+        else:
+            return r.process(binary, cwd="")
 
     else:
-        gs = '''
+        gs = """
         br _start
         c
         init-pwndbg
         c
-        '''
-        if args.GDB: return gdb.debug(elf.path, gs)
-        else: return process([f'qemu-arm {elf.path}'.split()])
+        """
+        if args.GDB:
+            return gdb.debug(elf.path, gs)
+        else:
+            return process(f"qemu-arm {elf.path}".split())
+
 
 def one_gadget(filename, base_addr=0):
-  return [(int(i)+base_addr) for i in subprocess.check_output(['one_gadget', '--raw', filename]).decode().split(' ')]
+    return [
+        (int(i) + base_addr)
+        for i in subprocess.check_output(["one_gadget", "--raw", filename])
+        .decode()
+        .split(" ")
+    ]
+
 
 def log_addr(name, addr):
-    log.info('{}: 0x{:x}'.format(name, addr))
+    log.info("{}: 0x{:x}".format(name, addr))
+
 
 io = start()
 
-sl = lambda x : io.sendline(x.encode() if type(x) == str else x)
-sla = lambda x, y : io.sendlineafter(x.encode() if type(x) == str else x, y.encode() if type(y) == str else y)
-se = lambda x : io.send(x.encode() if type(x) == str else x)
-sa = lambda x, y : io.sendafter(x.encode() if type(x) == str else x, y.encode() if type(y) == str else y)
-ru = lambda x : io.recvuntil(x.encode() if type(x) == str else x)
-rl = lambda : io.recvline()
-cl = lambda : io.clean()
-uu32 = lambda x : u32(x.ljust(4, b'\x00'))
-uu64 = lambda x : u64(x.ljust(8, b'\x00'))
+sl = lambda x: io.sendline(x.encode() if type(x) == str else x)
+sla = lambda x, y: io.sendlineafter(
+    x.encode() if type(x) == str else x, y.encode() if type(y) == str else y
+)
+se = lambda x: io.send(x.encode() if type(x) == str else x)
+sa = lambda x, y: io.sendafter(
+    x.encode() if type(x) == str else x, y.encode() if type(y) == str else y
+)
+ru = lambda x: io.recvuntil(x.encode() if type(x) == str else x)
+rl = lambda: io.recvline()
+cl = lambda: io.clean()
+uu32 = lambda x: u32(x.ljust(4, b"\x00"))
+uu64 = lambda x: u64(x.ljust(8, b"\x00"))
 
 io.interactive()
