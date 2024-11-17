@@ -1,0 +1,11 @@
+[submodule "tmux-dracula"]
+	path = files/tmux/plugins/tmux
+    url = git@github.com:dracula/tmux.git
+
+[submodule "tmux-tpm"]
+	path = files/tmux/plugins/tpm
+    url = git@github.com:tmux-plugins/tpm.git
+
+[submodule "tmux-vim-navigator"]
+	path = files/tmux/plugins/vim-tmux-navigator
+    url = git@github.com:christoomey/vim-tmux-navigator.git
