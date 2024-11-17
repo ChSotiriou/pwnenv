@@ -1,56 +1,87 @@
-local fn = vim.fn
-local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-if fn.empty(fn.glob(install_path)) > 0 then
-  packer_bootstrap = fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-end
-
-return require('packer').startup(function()
-    -- Packer can manage itself
-    use 'wbthomason/packer.nvim'
-
-    use 'neovim/nvim-lspconfig'
-    use 'sbdchd/neoformat'
-    use 'hrsh7th/cmp-nvim-lsp'
-    use 'hrsh7th/cmp-nvim-lua'
-    use 'hrsh7th/cmp-buffer'
-    use 'hrsh7th/cmp-path'
-    use 'hrsh7th/cmp-cmdline'
-    use 'hrsh7th/nvim-cmp'
-    use 'quangnguyen30192/cmp-nvim-ultisnips'
-    use 'nvim-treesitter/nvim-treesitter'
-
-    -- telescope
-    use 'nvim-lua/plenary.nvim'
-    use 'nvim-telescope/telescope.nvim'
-    use 'nvim-telescope/telescope-fzy-native.nvim'
-    use 'junegunn/goyo.vim'
-    use 'PotatoesMaster/i3-vim-syntax'
-    use 'VebbNix/lf-vim'
-
-    use 'tpope/vim-commentary'
-    use 'tpope/vim-surround'
-    use 'jiangmiao/auto-pairs'
-
-    use 'ryanoasis/vim-devicons'
-
-    use 'vim-airline/vim-airline'
-    use 'vim-airline/vim-airline-themes'
-    use {'dracula/vim', as='dracula'}
-    use 'unblevable/quick-scope'
-
-    use 'SirVer/ultisnips'
-    use 'honza/vim-snippets'
-    use 'junegunn/fzf.vim'
-
-    use 'airblade/vim-gitgutter'
-
-    use "christoomey/vim-tmux-navigator"
-
-    use {"akinsho/toggleterm.nvim", tag = '*', config = function()
-        require("toggleterm").setup()
-    end}
-
-    if packer_bootstrap then
-        require('packer').sync()
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+    local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+    local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+    if vim.v.shell_error ~= 0 then
+        vim.api.nvim_echo({
+            { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+            { out,                            "WarningMsg" },
+            { "\nPress any key to exit..." },
+        }, true, {})
+        vim.fn.getchar()
+        os.exit(1)
     end
-end)
+end
+vim.opt.rtp:prepend(lazypath)
+
+local plugins = {
+    -- LSP
+    'williamboman/mason.nvim',
+    'williamboman/mason-lspconfig.nvim',
+    'neovim/nvim-lspconfig',
+    'jose-elias-alvarez/null-ls.nvim',
+
+    'hrsh7th/cmp-nvim-lsp',
+    'hrsh7th/cmp-nvim-lua',
+    'hrsh7th/cmp-buffer',
+    'hrsh7th/cmp-path',
+    'hrsh7th/cmp-cmdline',
+    'hrsh7th/nvim-cmp',
+
+    'nvim-treesitter/nvim-treesitter',
+    'nvim-treesitter/playground',
+
+    'cdelledonne/vim-cmake',
+
+    -- Debugger,
+    'mfussenegger/nvim-dap',
+    'nvim-telescope/telescope-dap.nvim',
+    'theHamsta/nvim-dap-virtual-text',
+    'rcarriga/nvim-dap-ui',
+    'nvim-neotest/nvim-nio',
+
+    -- navigation,
+    'nvim-lua/plenary.nvim',
+    'nvim-telescope/telescope.nvim',
+    'nvim-telescope/telescope-fzy-native.nvim',
+    'ChSotiriou/nvim-telemake',
+
+    'stevearc/oil.nvim',
+
+    -- syntax,
+    'dpelle/vim-languagetool',
+    'PotatoesMaster/i3-vim-syntax',
+    'kelwin/vim-smali',
+    'VebbNix/lf-vim',
+    'vim-pandoc/vim-pandoc-syntax',
+    'dhruvasagar/vim-table-mode',
+    'lervag/vimtex',
+
+    'tpope/vim-commentary',
+    'tpope/vim-surround',
+    'jiangmiao/auto-pairs',
+
+    'ryanoasis/vim-devicons',
+
+    'vim-airline/vim-airline',
+    'vim-airline/vim-airline-themes',
+    { 'dracula/vim',           as = 'dracula' },
+    'unblevable/quick-scope',
+
+    'junegunn/fzf.vim',
+
+    'airblade/vim-gitgutter',
+    'NeogitOrg/neogit',
+
+    "akinsho/toggleterm.nvim",
+
+    "christoomey/vim-tmux-navigator",
+
+    { "L3MON4D3/LuaSnip", build = "make install_jsregexp" },
+    'saadparwaiz1/cmp_luasnip',
+}
+
+local opts = {}
+require("lazy").setup(plugins, opts)
+

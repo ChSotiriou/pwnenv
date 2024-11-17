@@ -40,10 +40,12 @@ vim.api.nvim_set_option('hlsearch', true)
 -- center screen in insert mode
 vim.cmd('autocmd InsertEnter * norm zz')
 
--- Prevent VIM from erasing clipboard at exit
-vim.cmd([[
-    autocmd VimLeave * call system("xsel -ib", getreg('+'))
-]])
+-- Automatically deletes all trailing whitespace and newlines at end of file on save.
+-- vim.cmd([[
+--     autocmd BufWritePre * %s/\s\+$//e
+--     autocmd BufWritePre * %s/\n\+\%$//e
+--     autocmd BufWritePre *.[ch] %s/\%$/\r/e
+-- ]])
 
 vim.api.nvim_set_option('backup', false)
 
@@ -89,7 +91,7 @@ vim.api.nvim_set_option('visualbell', true)
 -- And reset the terminal code for the visual bell. If visualbell is set, and
 -- this line is also included, vim will neither flash nor beep. If visualbell
 -- is unset, this does nothing.
-vim.api.nvim_set_option('t_vb', '')
+-- vim.api.nvim_set_option('t_vb', '')
 
 -- Enable use of the mouse for all modes
 vim.api.nvim_set_option('mouse', 'a')
@@ -106,7 +108,7 @@ vim.wo.relativenumber = true
 vim.cmd('set notimeout ttimeout ttimeoutlen=200')
 
 -- Use <F11> to toggle between 'paste' and 'nopaste'
-vim.api.nvim_set_option('pastetoggle', '<F11>')
+-- vim.api.nvim_set_option('pastetoggle', '<F11>')
 
 -- Use intuitive split location
 vim.api.nvim_set_option('splitright', true)
@@ -123,72 +125,79 @@ vim.cmd([[
 set tabstop=4
 set shiftwidth=4
 set softtabstop=4
+set shiftround
 set expandtab
 ]])
 
 -------------------------------------------------------------------------------
 
 -- language server | autocomplete | lsp
+require("mason").setup()
+
+require("mason-lspconfig").setup()
+
 vim.api.nvim_set_option('completeopt', 'menu,menuone,noselect')
 -- Setup nvim-cmp.
-local cmp = require'cmp'
+local cmp = require 'cmp'
 
 cmp.setup({
-  snippet = {
-    -- REQUIRED - you must specify a snippet engine
-    expand = function(args)
-      vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-    end,
-  },
+    snippet = {
+        -- REQUIRED - you must specify a snippet engine
+        expand = function(args)
+            -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+        end,
+    },
 
-  mapping = {
-    ['<C-j>'] = cmp.mapping(cmp.mapping.select_next_item(), { 'i', 'c' }),
-    ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(), { 'i', 'c' }),
-    ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
-    ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
-    ['<C-e>'] = cmp.mapping({
-      i = cmp.mapping.abort(),
-      c = cmp.mapping.close(),
-    }),
-    -- Accept currently selected item. If none selected, `select` first item.
-    -- Set `select` to `false` to only confirm explicitly selected items.
-    ['<CR>'] = cmp.mapping.confirm({ select = true }),
-  },
-  sources = {
-      { name = 'path' },
-      { name = 'nvim_lsp' },
-      { name = 'nvim_lua' },
-      { name = 'ultisnips' },
-      { name = 'buffer' }
-  },
+    mapping = {
+        ['<C-j>'] = cmp.mapping(cmp.mapping.select_next_item(), { 'i', 'c' }),
+        ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(), { 'i', 'c' }),
+        ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
+        ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
+        ['<C-e>'] = cmp.mapping({
+            i = cmp.mapping.abort(),
+            c = cmp.mapping.close(),
+        }),
+        -- Accept currently selected item. If none selected, `select` first item.
+        -- Set `select` to `false` to only confirm explicitly selected items.
+        ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    },
+    sources = {
+        { name = 'path' },
+        { name = 'nvim_lsp' },
+        { name = 'nvim_lua' },
+        { name = 'luasnip', option = { use_show_condition = false, show_autosnippets = true } },
+        { name = 'buffer' },
+    },
 })
 
 -- Autocomplete searching
-require'cmp'.setup.cmdline('/', {
-  sources = {
-    { name = 'buffer' }
-  }
+require 'cmp'.setup.cmdline('/', {
+    sources = {
+        { name = 'buffer' }
+    }
 })
 
 -- Autocomplete Commands
-require'cmp'.setup.cmdline(':', {
-  sources = {
-    { name = 'path' },
-    { name = 'cmdline' }
-  }
+require 'cmp'.setup.cmdline(':', {
+    sources = {
+        { name = 'path' },
+        { name = 'cmdline' }
+    }
 })
 
 -- Setup lspconfig.
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
-require('lspconfig')['clangd'].setup{ capabilities = capabilities }
-require('lspconfig')['cmake'].setup{ capabilities = capabilities }
-require('lspconfig')['dockerls'].setup{ capabilities = capabilities }
-require('lspconfig')['vimls'].setup{ capabilities = capabilities }
-require('lspconfig')['texlab'].setup{
+local capabilities = vim.lsp.protocol.make_client_capabilities();
+capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
+
+require('lspconfig')['clangd'].setup { capabilities = capabilities }
+require('lspconfig')['cmake'].setup { capabilities = capabilities }
+require('lspconfig')['dockerls'].setup { capabilities = capabilities }
+require('lspconfig')['vimls'].setup { capabilities = capabilities }
+require('lspconfig')['texlab'].setup {
     capabilities = capabilities,
     filetypes = { 'tex', 'bib', 'md' }
 }
-require('lspconfig')['lua_ls'].setup{
+require('lspconfig')['lua_ls'].setup {
     settings = {
         Lua = {
             runtime = {
@@ -197,7 +206,7 @@ require('lspconfig')['lua_ls'].setup{
             },
             diagnostics = {
                 -- Get the language server to recognize the `vim` global
-                globals = {'vim'},
+                globals = { 'vim' },
             },
             workspace = {
                 -- Make the server aware of Neovim runtime files
@@ -207,25 +216,98 @@ require('lspconfig')['lua_ls'].setup{
             -- Do not send telemetry data containing a randomized but unique identifier
             telemetry = {
                 enable = false,
-                },
+            },
         },
     },
     capabilities = capabilities
 }
-require'lspconfig'.rust_analyzer.setup{}
-require'lspconfig'.pyright.setup{}
+require 'lspconfig'.rust_analyzer.setup {}
+require 'lspconfig'.pyright.setup {}
+require 'lspconfig'.gopls.setup({
+    settings = {
+        gopls = {
+            analyses = {
+                unusedparams = true,
+            },
+            staticcheck = true,
+            gofumpt = true,
+        },
+    },
+})
 
 -------------------------------------------------------------------------------
 
-require("toggleterm").setup()
+-- neogit
+require('neogit').setup({})
+
+-- null-ls
+local null_ls = require("null-ls")
+null_ls.setup({
+    sources = {
+        null_ls.builtins.formatting.black.with({ extra_args = { "--fast" } }),
+        null_ls.builtins.formatting.clang_format.with({
+            extra_args = { "--style", "{IndentWidth: 4}" },
+            extra_filetypes = { 'h', 'hpp' }
+        }),
+        null_ls.builtins.diagnostics.clang_check,
+        null_ls.builtins.diagnostics.eslint,
+        null_ls.builtins.diagnostics.flake8,
+        null_ls.builtins.completion.spell,
+    },
+})
+
+
+
+-- ToggleTerm
+
+require("toggleterm").setup({
+    open_mapping = [[<c-t>]]
+})
+
+function _G.set_terminal_keymaps()
+    local opts = { noremap = true }
+    vim.api.nvim_buf_set_keymap(0, 't', '<esc>', [[<C-\><C-n>]], opts)
+    vim.api.nvim_buf_set_keymap(0, 't', 'jk', [[<C-\><C-n>]], opts)
+    vim.api.nvim_buf_set_keymap(0, 't', '<C-h>', [[<C-\><C-n><C-W>h]], opts)
+    vim.api.nvim_buf_set_keymap(0, 't', '<C-j>', [[<C-\><C-n><C-W>j]], opts)
+    vim.api.nvim_buf_set_keymap(0, 't', '<C-k>', [[<C-\><C-n><C-W>k]], opts)
+    vim.api.nvim_buf_set_keymap(0, 't', '<C-l>', [[<C-\><C-n><C-W>l]], opts)
+end
+
+vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
+
+-------------------------------------------------------------------------------
+
+-- TeleMake
+require("telescope").load_extension("telemake")
+
+-------------------------------------------------------------------------------
+
+-- Vim-Oil
+require("oil").setup({
+    view_options = {
+        -- Show files and directories that start with "."
+        show_hidden = true,
+    },
+    keymaps = {
+        ["<CR>"] = "actions.select",
+        ["-"] = "actions.parent",
+        ["_"] = "actions.open_cwd",
+        ["`"] = "actions.cd",
+        ["~"] = "actions.tcd",
+        ["g."] = "actions.toggle_hidden",
+    },
+    use_default_keymaps = false
+})
+vim.keymap.set("n", "-", require("oil").open, { desc = "Open parent directory" })
 
 -------------------------------------------------------------------------------
 
 -- Keymaps
 function ChangeLanguage()
     local languages = {
-        {'', 'en_gb'}, -- Default (English)
-        {'greek_utf-8', 'el'}
+        { '',            'en_gb' }, -- Default (English)
+        { 'greek_utf-8', 'el' }
     }
 
     for i = 1, #languages do
@@ -236,7 +318,6 @@ function ChangeLanguage()
         end
     end
 end
-
 
 -------------------------------------------------------------------------------
 
@@ -250,7 +331,7 @@ augroup END
 -------------------------------------------------------------------------------
 
 -- Treesitter Setup
-require'nvim-treesitter.configs'.setup { highlight = { enable = true } }
+require 'nvim-treesitter.configs'.setup { highlight = { enable = true } }
 
 -------------------------------------------------------------------------------
 
@@ -258,33 +339,6 @@ require'nvim-treesitter.configs'.setup { highlight = { enable = true } }
 vim.g.cmake_build_dir_location = 'build'
 vim.g.cmake_default_config = ''
 vim.g.cmake_root_markers = { 'build' }
-
--------------------------------------------------------------------------------
-
--- Neoformat
-
--- C/C++
-vim.cmd([[
-    let g:neoformat_cpp_clangformat = {
-    \    'exe': 'clang-format',
-    \    'args': ['--style="{IndentWidth: 4}"']
-    \}
-]])
-vim.g.neoformat_enabled_cpp = { 'clangformat' }
-vim.g.neoformat_enabled_c = { 'clangformat' }
-
-vim.cmd('autocmd BufWritePre *c,*.cpp,*.h,*.hpp Neoformat')
-
--- CMake
-vim.cmd([[
-    let g:neoformat_cmake_cmakeformat = {
-    \    'exe': 'cmake-format',
-    \    'args': ['--tab-size 4']
-    \}
-]])
-vim.g.neoformat_enabled_cmake = { 'cmakeformat' }
-
-vim.cmd('autocmd BufWritePre CMakeLists.txt Neoformat')
 
 -------------------------------------------------------------------------------
 
@@ -340,3 +394,23 @@ vim.g.vimtex_mappings_enabled = 0
 vim.g.vimtex_syntax_enabled = 0
 
 -------------------------------------------------------------------------------
+
+-- LanguageTool
+
+vim.g.languagetool_jar = '/opt/LanguageTool/languagetool-commandline.jar'
+
+-------------------------------------------------------------------------------
+
+-- Debugging
+-- Adapters
+-- LLVM (Low Level Virtual Machine)
+require 'dap'.adapters.cppdbg = {
+    type = 'executable',
+    command = '/usr/bin/lldb-vscode', -- adjust as needed, must be absolute path
+    name = 'lldb'
+}
+
+require('dap.ext.vscode').load_launchjs(nil, { cppdbg = { 'c', 'h' } })
+require("dapui").setup()
+require("nvim-dap-virtual-text").setup()
+

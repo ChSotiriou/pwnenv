@@ -1,5 +1,4 @@
 set debuginfod enabled on
-source /root/ctf-tools/heapinspect/gdbscript.py
 
 set step-mode on
 define init-peda
@@ -18,7 +17,7 @@ Initializes PwnDBG
 end
 
 define init-gef
-source ~/.gdbinit-gef.py
+source ~/.gdbinit_gef.py
 end
 document init-gef
 Initializes GEF (GDB Enhanced Features)

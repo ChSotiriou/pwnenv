@@ -16,10 +16,12 @@ vim.api.nvim_set_keymap('n', '<C-p>', '<cmd>lua vim.lsp.diagnostic.goto_next()<C
 
 -- telescope
 vim.api.nvim_set_keymap('n', '<leader>ff', '<cmd>Telescope find_files<cr>', default_opts)
+vim.api.nvim_set_keymap('n', '<leader>fm', '<cmd>Telescope telemake<cr>', default_opts)
 vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>Telescope live_grep<cr>', default_opts)
 vim.api.nvim_set_keymap('n', '<leader>fb', '<cmd>Telescope buffers<cr>', default_opts)
 vim.api.nvim_set_keymap('n', '<leader>fs', '<cmd>Telescope lsp_workspace_symbols<cr>', default_opts)
-vim.api.nvim_set_keymap('n', '<leader>fd', '<cmd>Telescope diagnostics<cr>', default_opts)
+vim.api.nvim_set_keymap('n', '<leader>fdw', '<cmd>Telescope diagnostics<cr>', default_opts)
+vim.api.nvim_set_keymap('n', '<leader>fdd', '<cmd>Telescope diagnostics bufnr=0<cr>', default_opts)
 vim.api.nvim_set_keymap('n', '<leader>fh', '<cmd>Telescope help_tags<cr>', default_opts)
 
 ------------------------------------------------------------------
@@ -29,22 +31,34 @@ vim.api.nvim_set_keymap('', '<leader>/', ':Commentary<CR>', {})
 
 ------------------------------------------------------------------
 
--- Vimspector
-vim.api.nvim_set_keymap('n', '<leader>dl', ':call vimspector#Launch()<CR>', default_opts)
-vim.api.nvim_set_keymap('n', '<leader>dr', ':VimspectorReset<CR>', default_opts)
-
-vim.api.nvim_set_keymap('n', '<leader>db', ':call vimspector#ToggleBreakpoint()<CR>', default_opts)
+-- Format
+vim.api.nvim_set_keymap('', '<leader>nf', ':lua vim.lsp.buf.format()<CR>', {})
 
 ------------------------------------------------------------------
 
+-- nvim-dap (Debugger)
+vim.api.nvim_set_keymap('n', "<leader>du", ":lua require'dapui'.toggle()<CR>", default_opts)
+vim.api.nvim_set_keymap('n', "<leader>db", ":lua require'dap'.toggle_breakpoint()<CR>", default_opts)
+vim.api.nvim_set_keymap('n', "<leader>dB", ":lua require'dap'.set_breakpoint(vim.fn.input('Break Condition: '))<CR>", default_opts)
+vim.api.nvim_set_keymap('n', "<leader>dc", ":lua require'dap'.continue()<CR>", default_opts)
+vim.api.nvim_set_keymap('n', "<leader>dt", ":lua require'dap'.terminate({}, {}, nil)<CR>", default_opts)
+vim.api.nvim_set_keymap('n', "<leader>ds", ":lua require'dap'.step_into()<CR>", default_opts)
+vim.api.nvim_set_keymap('n', "<leader>dn", ":lua require'dap'.step_over()<CR>", default_opts)
+vim.api.nvim_set_keymap('n', "<leader>do", ":lua require'dap'.step_out()<CR>", default_opts)
+vim.api.nvim_set_keymap('n', "<leader>dr", ":lua require'dap'.repl.toggle()<CR>", default_opts)
+vim.api.nvim_set_keymap('n', "<leader>dj", ":e .vscode/launch.json<CR>", default_opts)
+
+------------------------------------------------------------------
+
+
 -- Compile Commands
-vim.api.nvim_set_keymap('n', '<F5>', ':w! <bar> !compile % `pwd`<CR><CR>', default_opts)
+vim.api.nvim_set_keymap('n', '<F5>', ':w! <bar> !compile % "`pwd`"<CR><CR>', default_opts)
 vim.api.nvim_set_keymap('n', '<leader><F5>', ':!openOutput %<CR><CR>', default_opts)
 
 ------------------------------------------------------------------
 
 -- Vimsnippets
-vim.g.UltiSnipsExpandTrigger = "<tab>"
+vim.g.UltiSnipsExpandTrigger = "<c-tab>"
 vim.g.UltiSnipsJumpForwardTrigger = "<c-j>"
 vim.g.UltiSnipsJumpBackwardTrigger = "<c-k>"
 
@@ -94,4 +108,22 @@ vim.api.nvim_set_keymap('', '<C-l>', '<C-w>l', default_opts)
 -- split lines
 vim.api.nvim_set_keymap('', 'Q', 'gq', default_opts)
 
+-- combine lines 
+vim.api.nvim_set_keymap('', '<leader>Q', '<c-v>}kwhhxV}kk::s/\\n//g<CR>0x:nohl<CR><C-L>', default_opts)
+
 ------------------------------------------------------------------
+
+--
+vim.api.nvim_set_keymap('n', '<F7>', ':LanguageToolCheck<CR>', default_opts)
+vim.api.nvim_set_keymap('n', '<leader><F7>', ':LanguageToolClear<CR>', default_opts)
+
+------------------------------------------------------------------
+
+-- Latex
+vim.api.nvim_create_autocmd(
+  "FileType",
+  { pattern = {"tex"}, command = [[nnoremap <buffer><silent> <F3> :w !detex \| wc -w<CR>]] }
+)
+
+------------------------------------------------------------------
+

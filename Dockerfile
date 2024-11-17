@@ -1,9 +1,9 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # ----- Setup Enviornment ----- #
 # get basics
 USER root
-ENV HOME /root
+ENV HOME=/root
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
@@ -15,8 +15,6 @@ RUN apt-get update && \
     wget\
     curl\
     git\
-    python3\
-    python3-pip\
     zsh\
     tmux\
     xclip\
@@ -39,7 +37,7 @@ RUN apt-get update && \
     sshpass\
     sshfs\
     socat\
-    netcat\
+    netcat-openbsd\
     # qemu
     qemu-user\
     qemu-kvm\
@@ -49,8 +47,6 @@ RUN apt-get update && \
 RUN apt-get update && \
     apt-get install -y\
     python3\
-    python3-pip\
-    ipython3\
     ruby\
     ruby-dev\
     # debugging
@@ -66,14 +62,23 @@ RUN apt-get update && \
     # ctfmate
     patchelf\
     elfutils
+ 
+RUN apt update && \
+    apt install -y build-essential libssl-dev zlib1g-dev \
+    libbz2-dev libreadline-dev libsqlite3-dev curl git \
+    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev && \
+    curl https://pyenv.run | bash
+ENV PYENV_ROOT=$HOME/.pyenv
+ENV PATH=$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
+RUN pyenv install 3.12 && pyenv global 3.12
 
 # configure python(s)
 RUN python3 -m pip install --upgrade setuptools
-ENV PATH ${HOME}/.local/bin:${PATH}
+ENV PATH=${HOME}/.local/bin:${PATH}
 
 # Install Rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH ${HOME}/.cargo/bin:${PATH}
+ENV PATH=${HOME}/.cargo/bin:${PATH}
 
 # Support Unicode Characters (https://github.com/itzg/docker-minecraft-server/issues/2164)
 RUN apt-get update -y && apt-get install -y locales
@@ -97,7 +102,7 @@ WORKDIR /root
 COPY files/tmux /root/.config/tmux
 
 # setup vim to be awesome
-RUN wget https://github.com/neovim/neovim/releases/download/v0.8.0/nvim-linux64.tar.gz -O /tmp/nvim.tar.gz && \
+RUN wget https://github.com/neovim/neovim/releases/download/v0.10.2/nvim-linux64.tar.gz -O /tmp/nvim.tar.gz && \
     tar -xzvf /tmp/nvim.tar.gz -C /tmp && \
     cp -r /tmp/nvim-linux64/* /usr/local
 COPY files/vim /tmp/vim/
@@ -106,13 +111,12 @@ RUN mkdir -p .config/nvim && \
  ~/.local/share/nvim/site/pack/packer/start/packer.nvim && \
     python3 -m pip install --user neovim pyright && \
     cp /tmp/vim/* -r .config/nvim/ && \
-    nvim --headless -u ~/.config/nvim/lua/plugins.lua -c 'autocmd User PackerComplete quitall' -c 'PackerSync' && \
+    nvim --headless -c 'q' && \
     ln -s /usr/local/bin/nvim /usr/local/bin/vim
 
 # ----- RE Tools ----- #
 
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install --user pwntools && \
+RUN python3 -m pip install --user pwntools && \
     python3 -m pip install --user ptrlib && \
     python3 -m pip install --user ropper && \
     python3 -m pip install --user ROPGadget && \
@@ -134,24 +138,23 @@ RUN git clone https://github.com/pwndbg/pwndbg
 RUN cd ${HOME}/pwndbg && bash setup.sh && \
     echo "source ~/pwndbg/gdbinit.py" > ~/.gdbinit_pwndbg
 
-# peda
-RUN git clone https://github.com/longld/peda.git ~/peda
-
 # gef
 COPY files/gdb /tmp/gdb
-RUN python3 -m pip install rpyc keystone-engine && \
-    wget -q -O ~/.gdbinit-gef.py https://gef.blah.cat/py && \
-    echo source ~/.gdbinit-gef.py >> ~/.gdbinit && \
-    wget -q -O- https://github.com/hugsy/gef/raw/main/scripts/gef-extras.sh | sh && \
+RUN apt update && apt install -y file git binutils vim gcc gdb python-is-python3 && \
+    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
+    update-locale LANG=en_US.UTF-8 && \
+    bash -c "$(curl -fsSL https://gef.blah.cat/sh)" && \
+    wget https://github.com/hugsy/gef/raw/main/scripts/gef-extras.sh && \
+    sed -i -e "s/git clone/git clone -b 'fix_heap_viz_new_api'/g" gef-extras.sh && \
+    chmod 755 gef-extras.sh && \
+    ./gef-extras.sh && rm ./gef-extras.sh && \
+    mv .gef-*.py .gdbinit_gef.py && \
     cp /tmp/gdb/.gdbinit /root/.gdbinit
 
 WORKDIR /usr/bin
 RUN cp /tmp/gdb/gdb-* . && \
     chmod +x /usr/bin/gdb-*
-
-# heapinspect
-WORKDIR /root/ctf-tools
-RUN git clone https://github.com/matrix1001/heapinspect.git
 
 # Ruby Tools
 RUN gem install seccomp-tools one_gadget
@@ -162,6 +165,7 @@ RUN cargo install xgadget --features cli-bin && \
 
 # pwn templates
 COPY files/templates /tmp/templates
+RUN mkdir /root/ctf-tools
 RUN cp -r /tmp/templates /root/ctf-tools && \
     mv /root/ctf-tools/templates/make* /usr/bin && \
     chmod +x /usr/bin/makePWN* /root/ctf-tools/templates/*
