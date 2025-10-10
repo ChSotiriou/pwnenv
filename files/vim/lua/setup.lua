@@ -241,20 +241,20 @@ require 'lspconfig'.gopls.setup({
 require('neogit').setup({})
 
 -- null-ls
-local null_ls = require("null-ls")
-null_ls.setup({
-    sources = {
-        null_ls.builtins.formatting.black.with({ extra_args = { "--fast" } }),
-        null_ls.builtins.formatting.clang_format.with({
-            extra_args = { "--style", "{IndentWidth: 4}" },
-            extra_filetypes = { 'h', 'hpp' }
-        }),
-        null_ls.builtins.diagnostics.clang_check,
-        null_ls.builtins.diagnostics.eslint,
-        null_ls.builtins.diagnostics.flake8,
-        null_ls.builtins.completion.spell,
-    },
-})
+-- local null_ls = require("null-ls")
+-- null_ls.setup({
+--     sources = {
+--         null_ls.builtins.formatting.black.with({ extra_args = { "--fast" } }),
+--         null_ls.builtins.formatting.clang_format.with({
+--             extra_args = { "--style", "{IndentWidth: 4}" },
+--             extra_filetypes = { 'h', 'hpp' }
+--         }),
+--         null_ls.builtins.diagnostics.clang_check,
+--         null_ls.builtins.diagnostics.eslint,
+--         null_ls.builtins.diagnostics.flake8,
+--         null_ls.builtins.completion.spell,
+--     },
+-- })
 
 
 

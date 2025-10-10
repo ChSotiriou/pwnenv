@@ -1,5 +1,4 @@
-#!/usr/bin/python3
-
+#!/usr/bin/env python
 from pwn import *
 
 os.environ['QEMU_LD_PREFIX'] = '/usr/arm-linux-gnueabi'
@@ -9,23 +8,16 @@ context.arch = "arm"
 
 binary = '[binary]'
 elf = context.binary = ELF(binary)
-rop = ROP(elf)
+# rop = ROP(elf)
 
 ssh_en = False
 if args.R:
     host = args.HOST or ''
     port = args.PORT or 0
 
-    if ssh_en:
-        user = ''
-        password = ''
-        r = ssh(user=user, host=host, port=port, password=password)
-
-
-def start():
+def start() -> tube:
     if args.R:
-        if not ssh_en: return remote(host, port)
-        else: return r.process(binary, cwd='')
+        return remote(host, port)
 
     else:
         gs = '''
@@ -34,8 +26,16 @@ def start():
         init-pwndbg
         c
         '''
-        if args.GDB: return gdb.debug(elf.path, gs)
-        else: return process([f'qemu-arm {elf.path}'.split()])
+        if args.GDB: return gdb.debug(elf.path, gs, api=True)
+        else: return process(f'qemu-arm {elf.path}'.split())
+        # else: return process(f'qemu-aarch64 {elf.path}'.split())
+
+# Safelinking functions [https://github.com/mdulin2/mangle/]
+def protect_ptr(target, addr):
+	return (addr >> 12) ^ target
+
+def reveal_ptr(mangled_ptr, addr):
+	return protect_ptr(mangled_ptr, addr)
 
 def one_gadget(filename, base_addr=0):
   return [(int(i)+base_addr) for i in subprocess.check_output(['one_gadget', '--raw', filename]).decode().split(' ')]
@@ -45,14 +45,16 @@ def log_addr(name, addr):
 
 io = start()
 
-sl = lambda x : io.sendline(x.encode() if type(x) == str else x)
-sla = lambda x, y : io.sendlineafter(x.encode() if type(x) == str else x, y.encode() if type(y) == str else y)
-se = lambda x : io.send(x.encode() if type(x) == str else x)
-sa = lambda x, y : io.sendafter(x.encode() if type(x) == str else x, y.encode() if type(y) == str else y)
-ru = lambda x : io.recvuntil(x.encode() if type(x) == str else x)
-rl = lambda : io.recvline()
-cl = lambda : io.clean()
+toBytes = lambda x: x.encode() if type(x) == str else x
+sl = lambda x, **kw : io.sendline(toBytes(x), **kw)
+sla = lambda x, y, **kw : io.sendlineafter(toBytes(x), toBytes(y), **kw)
+se = lambda x, **kw : io.send(toBytes(x), **kw)
+sa = lambda x, y, **kw : io.sendafter(toBytes(x), toBytes(y), **kw)
+ru = lambda x, **kw : io.recvuntil(toBytes(x))
+rl = lambda **kw : io.recvline(**kw)
+cl = lambda **kw : io.clean(**kw)
 uu32 = lambda x : u32(x.ljust(4, b'\x00'))
 uu64 = lambda x : u64(x.ljust(8, b'\x00'))
+
 
 io.interactive()

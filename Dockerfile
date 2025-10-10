@@ -4,6 +4,7 @@ FROM ubuntu:24.04
 # get basics
 USER root
 ENV HOME=/root
+ENV TERM=xterm-256color
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
@@ -31,6 +32,7 @@ RUN apt-get update && \
     llvm\
     cmake\
     binutils-multiarch\
+    binutils-aarch64-linux-gnu-dbg \
     musl\
     musl-tools\
     # connectivity
@@ -41,7 +43,8 @@ RUN apt-get update && \
     # qemu
     qemu-user\
     qemu-kvm\
-    valgrind
+    valgrind\
+    libslirp0 libpixman-1-0 libpng16-16t64 libjpeg-turbo8 libsdl2-image-2.0-0 libglib2.0-0t64 libasound2t64 libpulse0 libsndio7.0
 
 # Tooling
 RUN apt-get update && \
@@ -55,6 +58,7 @@ RUN apt-get update && \
     libc6-armel-cross\
     gcc-arm-linux-gnueabihf\
     gcc-10-arm-linux-gnueabi\
+    gcc-10-aarch64-linux-gnu\
     gdb\
     gdbserver\
     gdb-multiarch\
@@ -102,9 +106,9 @@ WORKDIR /root
 COPY files/tmux /root/.config/tmux
 
 # setup vim to be awesome
-RUN wget https://github.com/neovim/neovim/releases/download/v0.10.2/nvim-linux64.tar.gz -O /tmp/nvim.tar.gz && \
+RUN wget https://github.com/neovim/neovim/releases/download/v0.11.3/nvim-linux-x86_64.tar.gz -O /tmp/nvim.tar.gz && \
     tar -xzvf /tmp/nvim.tar.gz -C /tmp && \
-    cp -r /tmp/nvim-linux64/* /usr/local
+    cp -r /tmp/nvim-linux-x86_64/* /usr/local
 COPY files/vim /tmp/vim/
 RUN mkdir -p .config/nvim && \
     git clone --depth 1 https://github.com/wbthomason/packer.nvim\
@@ -120,26 +124,30 @@ RUN python3 -m pip install --user pwntools && \
     python3 -m pip install --user ptrlib && \
     python3 -m pip install --user ropper && \
     python3 -m pip install --user ROPGadget && \
-    python3 -m pip install --user sagemath numpy
+    python3 -m pip install --user numpy && \
+    python3 -m pip install --user keystone-engine && \
+    python3 -m pip install --user ipdb #&& \
+    # python3 -m pip install --user sagemath
 
 # Downgrade unicorn package to prevent pwntools crash
 RUN pip3 install unicorn==1.0.3
 
 # qemu
-RUN mkdir -p /etc/qemu-binfmt && \ 
-    ln -s /usr/arm-linux-gnueabi /etc/qemu-binfmt/arm
+RUN mkdir -p /usr/gnemul && \ 
+    ln -s /usr/arm-linux-gnueabi /usr/gnemul/qemu-arm && \
+    ln -s /usr/aarch64-linux-gnu /usr/gnemul/qemu-aarch64
 
 # gdb 
 RUN mkdir -p /etc/debuginfod/ && \
     echo "https://debuginfod.elfutils.org/" >> urls.urls
 
+COPY files/gdb /tmp/gdb
+
 # pwndbg
 RUN git clone https://github.com/pwndbg/pwndbg
-RUN cd ${HOME}/pwndbg && bash setup.sh && \
-    echo "source ~/pwndbg/gdbinit.py" > ~/.gdbinit_pwndbg
+RUN cd ${HOME}/pwndbg && bash setup.sh && rm /root/.gdbinit
 
 # gef
-COPY files/gdb /tmp/gdb
 RUN apt update && apt install -y file git binutils vim gcc gdb python-is-python3 && \
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
@@ -149,8 +157,9 @@ RUN apt update && apt install -y file git binutils vim gcc gdb python-is-python3
     sed -i -e "s/git clone/git clone -b 'fix_heap_viz_new_api'/g" gef-extras.sh && \
     chmod 755 gef-extras.sh && \
     ./gef-extras.sh && rm ./gef-extras.sh && \
-    mv .gef-*.py .gdbinit_gef.py && \
-    cp /tmp/gdb/.gdbinit /root/.gdbinit
+    mv .gef-*.py .gdbinit_gef.py 
+
+RUN cp /tmp/gdb/.gdbinit /root/.gdbinit
 
 WORKDIR /usr/bin
 RUN cp /tmp/gdb/gdb-* . && \

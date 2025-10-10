@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker build -t christoss/pwnenv .
+DOCKER_BUILDKIT=0 docker --debug build -t christoss/pwnenv .

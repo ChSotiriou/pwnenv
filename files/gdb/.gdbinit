@@ -1,16 +1,16 @@
 set debuginfod enabled on
 
 set step-mode on
-define init-peda
-source ~/peda/peda.py
-end
-document init-peda
-Initializes the PEDA (Python Exploit Development Assistant for GDB) framework
-end
+
+# define init-peda
+# source ~/peda/peda.py
+# end
+# document init-peda
+# Initializes the PEDA (Python Exploit Development Assistant for GDB) framework
+# end
 
 define init-pwndbg
-source ~/.gdbinit_pwndbg
-set debuginfod enabled on
+source ~/pwndbg/gdbinit.py
 end
 document init-pwndbg
 Initializes PwnDBG
