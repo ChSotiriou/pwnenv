@@ -65,7 +65,8 @@ RUN apt-get update && \
     clangd\
     # ctfmate
     patchelf\
-    elfutils
+    elfutils\
+    npm
  
 RUN apt update && \
     apt install -y build-essential libssl-dev zlib1g-dev \
@@ -106,17 +107,17 @@ WORKDIR /root
 COPY files/tmux /root/.config/tmux
 
 # setup vim to be awesome
-RUN wget https://github.com/neovim/neovim/releases/download/v0.11.3/nvim-linux-x86_64.tar.gz -O /tmp/nvim.tar.gz && \
+RUN wget https://github.com/neovim/neovim/releases/download/v0.11.4/nvim-linux-x86_64.tar.gz -O /tmp/nvim.tar.gz && \
     tar -xzvf /tmp/nvim.tar.gz -C /tmp && \
     cp -r /tmp/nvim-linux-x86_64/* /usr/local
 COPY files/vim /tmp/vim/
 RUN mkdir -p .config/nvim && \
-    git clone --depth 1 https://github.com/wbthomason/packer.nvim\
- ~/.local/share/nvim/site/pack/packer/start/packer.nvim && \
     python3 -m pip install --user neovim pyright && \
     cp /tmp/vim/* -r .config/nvim/ && \
     nvim --headless -c 'q' && \
+    nvim --headless -c 'MasonInstall autoflake autopep8 clang-format clangd eslint-lsp flake8 pyright' -c 'q' && \
     ln -s /usr/local/bin/nvim /usr/local/bin/vim
+
 
 # ----- RE Tools ----- #
 
@@ -224,4 +225,4 @@ WORKDIR /root/data
 RUN rm -rf /tmp/*
 ENTRYPOINT [ "/usr/bin/zsh" ]
 
-# vim: set syntax=dockerfile:
+# # vim: set syntax=dockerfile:

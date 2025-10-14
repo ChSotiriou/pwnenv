@@ -1,4 +1,9 @@
 -------------------------------------------------------------------------------
+-- Specify python version
+
+vim.g.python3_host_prog = '/root/.pyenv/shims/python'
+
+-------------------------------------------------------------------------------
 
 -- Vim with default settings does not allow easy switching between multiple files
 -- in the same editor window. Users can use multiple split windows or multiple
@@ -48,6 +53,10 @@ vim.cmd('autocmd InsertEnter * norm zz')
 -- ]])
 
 vim.api.nvim_set_option('backup', false)
+
+
+vim.o.cursorline = true
+vim.o.cursorcolumn = true
 
 -------------------------------------------------------------------------------
 
@@ -132,8 +141,8 @@ set expandtab
 -------------------------------------------------------------------------------
 
 -- language server | autocomplete | lsp
+vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
 require("mason").setup()
-
 require("mason-lspconfig").setup()
 
 vim.api.nvim_set_option('completeopt', 'menu,menuone,noselect')
@@ -189,15 +198,15 @@ require 'cmp'.setup.cmdline(':', {
 local capabilities = vim.lsp.protocol.make_client_capabilities();
 capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
-require('lspconfig')['clangd'].setup { capabilities = capabilities }
-require('lspconfig')['cmake'].setup { capabilities = capabilities }
-require('lspconfig')['dockerls'].setup { capabilities = capabilities }
-require('lspconfig')['vimls'].setup { capabilities = capabilities }
-require('lspconfig')['texlab'].setup {
+vim.lsp.config('clangd', { capabilities = capabilities }); vim.lsp.enable('clangd')
+vim.lsp.config('cmake', { capabilities = capabilities }); vim.lsp.enable('cmake')
+vim.lsp.config('dockerls', { capabilities = capabilities }); vim.lsp.enable('dockerls')
+vim.lsp.config('vimls', { capabilities = capabilities }); vim.lsp.enable('vimls')
+vim.lsp.config('texlab', {
     capabilities = capabilities,
     filetypes = { 'tex', 'bib', 'md' }
-}
-require('lspconfig')['lua_ls'].setup {
+}); vim.lsp.enable('texlab')
+vim.lsp.config('lua_ls', {
     settings = {
         Lua = {
             runtime = {
@@ -220,10 +229,10 @@ require('lspconfig')['lua_ls'].setup {
         },
     },
     capabilities = capabilities
-}
-require 'lspconfig'.rust_analyzer.setup {}
-require 'lspconfig'.pyright.setup {}
-require 'lspconfig'.gopls.setup({
+}); vim.lsp.enable('lua_ls')
+vim.lsp.config('rust_analyzer', {}); vim.lsp.enable('rust_analyzer')
+vim.lsp.config('pyright', { capabilities = capabilities }); vim.lsp.enable('pyright')
+vim.lsp.config('gopls', {
     settings = {
         gopls = {
             analyses = {
@@ -233,7 +242,7 @@ require 'lspconfig'.gopls.setup({
             gofumpt = true,
         },
     },
-})
+}); vim.lsp.enable('gopls')
 
 -------------------------------------------------------------------------------
 
@@ -241,21 +250,20 @@ require 'lspconfig'.gopls.setup({
 require('neogit').setup({})
 
 -- null-ls
--- local null_ls = require("null-ls")
--- null_ls.setup({
---     sources = {
---         null_ls.builtins.formatting.black.with({ extra_args = { "--fast" } }),
---         null_ls.builtins.formatting.clang_format.with({
---             extra_args = { "--style", "{IndentWidth: 4}" },
---             extra_filetypes = { 'h', 'hpp' }
---         }),
---         null_ls.builtins.diagnostics.clang_check,
---         null_ls.builtins.diagnostics.eslint,
---         null_ls.builtins.diagnostics.flake8,
---         null_ls.builtins.completion.spell,
---     },
--- })
-
+local null_ls = require("null-ls")
+null_ls.setup({
+    sources = {
+        null_ls.builtins.formatting.clang_format.with({
+            extra_args = { "--style", "{IndentWidth: 4}" },
+            extra_filetypes = { "h", "hpp" },
+        }),
+        null_ls.builtins.formatting.htmlbeautifier.with({
+            filetypes = { "html", "eruby", "htm" },
+            extra_args = { "--keep-blank-lines", "1" },
+        }),
+        null_ls.builtins.completion.spell,
+    },
+})
 
 
 -- ToggleTerm
@@ -397,7 +405,7 @@ vim.g.vimtex_syntax_enabled = 0
 
 -- LanguageTool
 
-vim.g.languagetool_jar = '/opt/LanguageTool/languagetool-commandline.jar'
+vim.g.languagetool_jar = '/usr/share/java/languagetool/languagetool-commandline.jar'
 
 -------------------------------------------------------------------------------
 
